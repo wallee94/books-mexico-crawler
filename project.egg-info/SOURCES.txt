@@ -7,6 +7,7 @@ bookscraper/settings.py
 bookscraper/spiders/__init__.py
 bookscraper/spiders/gandhi.py
 bookscraper/spiders/gonvill.py
+bookscraper/spiders/pendulo.py
 bookscraper/spiders/sotano.py
 project.egg-info/PKG-INFO
 project.egg-info/SOURCES.txt
