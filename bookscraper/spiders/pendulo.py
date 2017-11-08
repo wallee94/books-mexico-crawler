@@ -1,15 +1,18 @@
 import re
 import scrapy
+import pkgutil
 
 
 class ElPenduloSpider(scrapy.Spider):
     name = "pendulo.com"
 
     def start_requests(self):
-        with open("isbn.txt", "r") as f:
-            for line in f:
-                url = "https://pendulo.com/libreria/" + line[:-1]
-                yield scrapy.Request(url=url, callback=self.parse_details)
+        binary_string = pkgutil.get_data("bookscraper", "resources/isbn.txt")
+        isbn_list = binary_string.decode("utf-8").split("\n")
+
+        for isbn in isbn_list:
+            url = "https://pendulo.com/libreria/" + isbn
+            yield scrapy.Request(url=url, callback=self.parse_details)
 
     def parse_details(self, response):
         no_product = response.selector.xpath('//div[@style="display:block;"]/*[@id="productoPR_sinProducto"]')
