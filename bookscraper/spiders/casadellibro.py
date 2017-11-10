@@ -4,6 +4,7 @@ import scrapy
 
 class CasaDelLibroSpider(scrapy.Spider):
     name = "casadelibro.com.mx"
+    download_delay = 5
 
     def start_requests(self):
         urls = ['http://casadelibro.com.mx/1_es_' + str(i) + '_sitemap.xml' for i in range(5)]
