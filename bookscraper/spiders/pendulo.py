@@ -1,6 +1,7 @@
-import re
-import scrapy
 import pkgutil
+import re
+
+import scrapy
 
 
 class ElPenduloSpider(scrapy.Spider):

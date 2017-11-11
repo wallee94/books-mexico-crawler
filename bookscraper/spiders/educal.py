@@ -1,6 +1,6 @@
-import scrapy
 import re
-import json
+
+import scrapy
 
 
 class EducalSpider(scrapy.Spider):
