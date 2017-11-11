@@ -43,7 +43,7 @@ class EducalSpider(scrapy.Spider):
             books_found += 1
             yield scrapy.Request(url=url.extract(), callback=self.parse_details, headers=self.listing_headers)
 
-        if books_found == 16:
+        if books_found != 0:
             url = response.url.split("pagina")[0] + "pagina" + str(int(page) + 1) + ".html"
             yield scrapy.Request(url=url, callback=self.parse, headers=self.listing_headers)
 
