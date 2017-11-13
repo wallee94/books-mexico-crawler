@@ -2,13 +2,14 @@ import scrapy
 import json
 
 
-class QueLibroLeoUrls(scrapy.Spider):
-    name = "azure_quelibroleo.com"
+class Azure(scrapy.Spider):
+    name = "bing_azure_API"
 
     def __init__(self, name=None, **kwargs):
         super().__init__(name, **kwargs)
-        self.base_url = "https://api.cognitive.microsoft.com/bing/v7.0/search" \
-                        "?q=site:quelibroleo.com&count=50&offset="
+        query = "site:elfondoenlinea.com"
+        self.limit = 23300
+        self.base_url = "https://api.cognitive.microsoft.com/bing/v7.0/search?q=" + query + "&count=50&offset="
         self.headers = {
             "Ocp-Apim-Subscription-Key": "0f5e3b448b6c45e0b5ad33f43fcd4fe7"
         }
@@ -26,7 +27,7 @@ class QueLibroLeoUrls(scrapy.Spider):
         for item in items:
             yield item
 
-        if start < 279000 - 50:
+        if start < self.limit - 50:
             yield scrapy.Request(url=self.base_url + str(start + 50), callback=self.parse, headers=self.headers)
 
 
