@@ -28,7 +28,8 @@ class CasaDelLibroSpider(scrapy.Spider):
 
         for loc in locs:
             url = loc.extract()
-            yield scrapy.Request(url=url, callback=self.parse_details, headers=self.details_headers)
+            if ".pdf" not in url:
+                yield scrapy.Request(url=url, callback=self.parse_details, headers=self.details_headers)
 
     def parse_details(self, response):
         data={
