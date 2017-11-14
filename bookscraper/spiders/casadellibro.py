@@ -4,7 +4,6 @@ import scrapy
 
 class CasaDelLibroSpider(scrapy.Spider):
     name = "casadelibro.com.mx"
-    download_delay = 3
     crawlera_enabled = True
     crawlera_apikey = 'ed62d130ee8a4973a72ef0a1b81b3a29'
 
