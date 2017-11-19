@@ -52,10 +52,10 @@ ROBOTSTXT_OBEY = True
 
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
-DOWNLOADER_MIDDLEWARES = {
-    # 'bookscraper.middlewares.MyCustomDownloaderMiddleware': 543,
-    'scrapy_crawlera.CrawleraMiddleware': 610
-}
+# DOWNLOADER_MIDDLEWARES = {
+#     # 'bookscraper.middlewares.MyCustomDownloaderMiddleware': 543,
+#     'scrapy_crawlera.CrawleraMiddleware': 610
+# }
 
 # Enable or disable extensions
 # See http://scrapy.readthedocs.org/en/latest/topics/extensions.html
