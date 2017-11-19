@@ -6,6 +6,8 @@ import scrapy
 
 class CasaDelLibroSpider(scrapy.Spider):
     name = "casadelibro.com.mx"
+    download_delay = 3  # default for all spiders
+
     crawlera_enabled = True
     crawlera_apikey = 'ed62d130ee8a4973a72ef0a1b81b3a29'
 
@@ -36,7 +38,7 @@ class CasaDelLibroSpider(scrapy.Spider):
         for loc in locs:
             url = loc.extract()
             if ".pdf" not in url and url not in self.requests_done:
-                yield scrapy.Request(url=url, callback=self.parse_details, headers=self.details_headers)
+                yield scrapy.Request(url=url, callback=self.parse_details, headers=self.details_headers, errback=self.change_delay)
 
     def parse_details(self, response):
         data={
@@ -49,10 +51,16 @@ class CasaDelLibroSpider(scrapy.Spider):
             "ISBN": self.clean_price(response.selector.xpath('//*[@itemprop="sku"]/text()').extract_first())
         }
 
+        if self.download_delay == 60:
+            self.download_delay = 3
+
         if not data["price"]:
             return
 
         yield data
+
+    def change_delay(self, response):
+        self.download_delay = 60
 
     def clean_text(self, text):
         if not isinstance(text, str):
