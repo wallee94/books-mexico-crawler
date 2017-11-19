@@ -1,4 +1,6 @@
+import pkgutil
 import re
+
 import scrapy
 
 
@@ -6,6 +8,12 @@ class CasaDelLibroSpider(scrapy.Spider):
     name = "casadelibro.com.mx"
     crawlera_enabled = True
     crawlera_apikey = 'ed62d130ee8a4973a72ef0a1b81b3a29'
+
+    def __init__(self, name=None, **kwargs):
+        super().__init__(name, **kwargs)
+
+        binary_string = pkgutil.get_data("bookscraper", "resources/casadelibro_requests_done.txt")
+        self.requests_done = binary_string.decode("utf-8").split("\n")
 
     def start_requests(self):
         urls = ['http://casadelibro.com.mx/1_es_' + str(i) + '_sitemap.xml' for i in range(5)]
@@ -27,7 +35,7 @@ class CasaDelLibroSpider(scrapy.Spider):
 
         for loc in locs:
             url = loc.extract()
-            if ".pdf" not in url:
+            if ".pdf" not in url and url not in self.requests_done:
                 yield scrapy.Request(url=url, callback=self.parse_details, headers=self.details_headers)
 
     def parse_details(self, response):
