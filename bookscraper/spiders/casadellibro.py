@@ -54,13 +54,14 @@ class CasaDelLibroSpider(scrapy.Spider):
         if self.download_delay == 60:
             self.download_delay = 3
 
-        if not data["price"]:
+        if data["price"] == -1 or data["ISBN"] == -1:
             return
 
         yield data
 
     def change_delay(self, response):
-        self.download_delay = 60
+        if response.status == 429:  # too many requests
+            self.download_delay = 60
 
     def clean_text(self, text):
         if not isinstance(text, str):
