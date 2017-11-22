@@ -6,10 +6,10 @@ import scrapy
 
 class CasaDelLibroSpider(scrapy.Spider):
     name = "casadelibro.com.mx"
-    download_delay = 3  # default for all spiders
+    download_delay = 8
 
-    # crawlera_enabled = True
-    # crawlera_apikey = 'ed62d130ee8a4973a72ef0a1b81b3a29'
+    crawlera_enabled = True
+    crawlera_apikey = 'ed62d130ee8a4973a72ef0a1b81b3a29'
 
     def __init__(self, name=None, **kwargs):
         super().__init__(name, **kwargs)
@@ -51,17 +51,10 @@ class CasaDelLibroSpider(scrapy.Spider):
             "ISBN": self.clean_price(response.selector.xpath('//*[@itemprop="sku"]/text()').extract_first())
         }
 
-        if self.download_delay == 60:
-            self.download_delay = 3
-
         if data["price"] == -1 or data["ISBN"] == -1:
             return
 
         yield data
-
-    def change_delay(self, response):
-        if response.status == 429:  # too many requests
-            self.download_delay = 60
 
     def clean_text(self, text):
         if not isinstance(text, str):
