@@ -3,27 +3,43 @@ import os
 
 
 def build_dbook():
-    websites = ["gandhi.com.mx", "casadelibro.com.mx", "educal.com.mx", "gonvill.com.mx"]
+    websites = ["gandhi", "casadelibro", "educal", "gonvill"]
     dbook = {}
     for website in websites:
-        f = open(os.path.join(os.getcwd(), "results/" + website + ".jl"), "r")
+        f = open(os.path.join(os.getcwd(), website + ".com.mx.jl"), "r")
         for line in f:
             # d is the new item
             d = json.loads(line)
 
-            isbn = d.get("ISBN")
+            if not d.get("ISBN") or not d.get("price"):
+                continue
+
+            isbn = str(int(d.get("ISBN")))  # clean left zeros
             title = d.get("title")
             edit = d.get("editorial")
             author = d.get("author")
             content = d.get("content")
-
-            if not isbn:
-                continue
+            price = float(d.get("price"))
 
             if isbn in dbook:
                 # if isbn is already saved in dbook
+                if len(d.get("content")) > len(dbook[isbn]["content"]):
+                    dbook[isbn]["content"] = d.get("content")
+
+                if not dbook[isbn]["edit"]:
+                    dbook[isbn]["edit"] = d.get("edit")
+
+                if not dbook[isbn]["title"]:
+                    dbook[isbn]["title"] = d.get("title")
+
+                if not dbook[isbn]["author"]:
+                    dbook[isbn]["author"] = d.get("author")
+
+                elif d.get("author") and "," not in d.get("author") and "," in dbook[isbn]["author"]:
+                    dbook[isbn]["content"] = d.get("author")
+
                 dbook[isbn]["libraries"][website] = {
-                    "price": d.get("price"),
+                    "price": price,
                     "url": d.get("url"),
                 }
 
@@ -36,7 +52,7 @@ def build_dbook():
                 }
                 dbook[isbn]["libraries"] = {
                     website: {
-                        "price": d.get("price"),
+                        "price": price,
                         "url": d.get("url"),
                     }
                 }
@@ -61,4 +77,7 @@ def save_dbook(filename, dbook):
 
 if __name__ == "__main__":
     dbook = build_dbook()
-    print_dbook(dbook)
+    with open("isbn.txt", "w") as f:
+        for isbn in dbook:
+            if isbn:
+                f.write(isbn + "\n")

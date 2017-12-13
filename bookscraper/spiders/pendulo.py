@@ -7,15 +7,17 @@ import scrapy
 class ElPenduloSpider(scrapy.Spider):
     name = "pendulo.com"
 
-    def start_requests(self):
-        binary_string = pkgutil.get_data("bookscraper", "resources/isbn.txt")
-        isbn_list = binary_string.decode("utf-8").split("\n")
-
+    def __init__(self, name=None, **kwargs):
+        super().__init__(name, **kwargs)
         self.details_headers = {
             "Host": "pendulo.com",
             "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:56.0) Gecko/20100101 Firefox/56.0",
             "Accept-Encoding": "gzip, deflate, br",
         }
+
+    def start_requests(self):
+        binary_string = pkgutil.get_data("bookscraper", "resources/isbn.txt")
+        isbn_list = binary_string.decode("utf-8").split("\n")
 
         for isbn in isbn_list:
             url = "https://pendulo.com/libreria/" + isbn
@@ -26,7 +28,7 @@ class ElPenduloSpider(scrapy.Spider):
         if no_product:
             return
 
-        data={
+        data = {
             "url": response.url,
             "title": self.clean_text(response.selector.xpath('//div/h1[@itemprop="name"]/text()').extract_first()),
             "content": self.clean_text(response.selector.xpath('//div[@id="productoPR_descripcion"]/text()').extract_first()),
