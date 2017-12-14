@@ -1,16 +1,13 @@
-import scrapy
-import json
+import pkgutil
 import re
+import scrapy
 
 
-class SotanoSpider(scrapy.Spider):
-    name = "elsotano.com"
+class ElSotano(scrapy.Spider):
+    name = 'elsotano.com'
 
-    def start_requests(self):
-        urls = [
-            'https://www.elsotano.com/libros_tema-literatura-405?page=0',
-            'https://www.elsotano.com/libros_tema-historia-401?page=0',
-        ]
+    def __init__(self, name=None, **kwargs):
+        super().__init__(name, **kwargs)
         self.listing_headers={
             "Host": "www.elsotano.com",
             "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:56.0) Gecko/20100101 Firefox/56.0",
@@ -19,26 +16,30 @@ class SotanoSpider(scrapy.Spider):
             "Accept-Encoding": "gzip, deflate, br",
             "Connection": "keep-alive"
         }
-        for url in urls:
-            yield scrapy.Request(url=url, callback=self.parse, headers=self.listing_headers)
+
+    def start_requests(self):
+        binary_string = pkgutil.get_data("bookscraper", "resources/isbn.txt")
+        isbn_list = binary_string.decode("utf-8").split("\n")
+
+        for isbn in isbn_list:
+            url = "https://www.elsotano.com/busqueda.php?q=" + isbn
+            yield scrapy.Request(url=url, callback=self.parse, headers=self.listing_headers, meta={"isbn":isbn})
 
     def parse(self, response):
-        page= response.url.split("=")[1]
         books_found = 0
 
-        headers = self.listing_headers.copy()
-        headers["Referer"] = response.url.split("?")[0]
+        for li in response.selector.css("li.grid"):
+            url = li.xpath("./figure/a/@href").extract_first()
+            if url:
+                books_found += 1
+                yield scrapy.Request(url="https://www.elsotano.com/" + url,
+                                     callback=self.parse_details,
+                                     headers=self.listing_headers,
+                                     meta=response.meta
+                                     )
 
-        for figure in response.selector.css("figure.effect-zoe"):
-            url= figure.xpath("a/@href").extract_first()
-            books_found += 1
-            yield scrapy.Request(url="https://www.elsotano.com/" + url, callback=self.parse_details, headers=headers)
-
-        # find new url
-        if books_found == 16:
-            url= response.url.split("=")[0] + "=" + str(int(page) + 1)
-            yield scrapy.Request(url=url, callback=self.parse, headers=headers)
-
+        if books_found == 0:
+            return
 
     def parse_details(self, response):
         data={
@@ -48,8 +49,11 @@ class SotanoSpider(scrapy.Spider):
             "author": self.clean_text(response.selector.xpath('//div[@class="descripcion-libro DER"]/a/text()').extract_first()),
             "editorial": self.clean_text(response.selector.xpath("//div/div/span/a/text()").extract_first()),
             "price": self.clean_price(response.selector.xpath('//div/div/div/p/span[2]/text()').extract_first()),
-            "ISBN": self.clean_price(response.selector.xpath("//div/div/div/div/span[5]/text()").extract_first())
+            "ISBN": response.meta.get("isbn")
         }
+
+        if not data.get("title") or not data.get("price"):
+            return
 
         yield data
 
@@ -65,6 +69,6 @@ class SotanoSpider(scrapy.Spider):
             return "-1"
         res = ""
         for c in price:
-            if c.isdigit():
+            if c.isdigit() or c == ".":
                 res += c
         return res
