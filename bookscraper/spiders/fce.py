@@ -52,13 +52,13 @@ class FondodeCulturaEconomica(scrapy.Spider):
 
         for price, isbn in zip(prices, isbns):
             data={
-                "url": response.url.strip(),
+                "url": self.clean_url(response.url.strip()),
                 "title": self.clean_text(response.selector.xpath('//li/span[@class="text-titulo"]/text()').extract_first()),
                 "content": self.clean_text(response.selector.xpath('//div/div[@class="col-md-12"][1]/text()').extract_first()),
                 "author": self.clean_text(response.selector.xpath('//li/span[@class="text-autor"][1]/text()').extract_first()),
-                "price": self.clean_price(price.extract_first()),
+                "price": self.clean_price(price.extract()),
                 "editorial": self.clean_text(response.selector.xpath('//li/span[@class="text-editorial"]/text()').extract_first()),
-                "ISBN": self.clean_isbn(isbn.extract_first()),
+                "ISBN": self.clean_isbn(isbn.extract()),
             }
 
             if not data.get("title") or not data.get("price") or not data.get("ISBN"):
@@ -86,3 +86,6 @@ class FondodeCulturaEconomica(scrapy.Spider):
             if c.isdigit() or c == ".":
                 res += c
         return res
+
+    def clean_url(self, url):
+        return re.sub(r'[%20]+$', "", url)
