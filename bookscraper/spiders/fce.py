@@ -31,7 +31,6 @@ class FondodeCulturaEconomica(scrapy.Spider):
             url = "https://elfondoenlinea.com/Busqueda.aspx?tit=on&buscar=" + title
             yield scrapy.Request(url=url, callback=self.parse, headers=self.listing_headers)
 
-
     def parse(self, response):
         books_found = 0
 
@@ -48,23 +47,24 @@ class FondodeCulturaEconomica(scrapy.Spider):
             return
 
     def parse_details(self, response):
-        price = response.xpath('//ul[@class="nav fce-buttons-buy-container"]').extract_first()
-        for i in range(0,len(price)):
-            if response.selector.xpath()
-        data={
-            "url": response.url.strip(),
-            "title": self.clean_text(response.selector.xpath('//li/span[@class="text-titulo"]/text()').extract_first()),
-            "content": self.clean_text(response.selector.xpath('//div/div[@class="col-md-12"][1]/text()').extract_first()),
-            "author": self.clean_text(response.selector.xpath('//li/span[@class="text-autor"][1]/text()').extract_first()),
-            "price": self.clean_price(response.selector.xpath('//li//li[2]/text()').extract_first()),
-            "editorial": self.clean_text(response.selector.xpath('//li/span[@class="text-editorial"]/text()').extract_first()),
-            "ISBN": self.clean_isbn(response.selector.xpath('//div[@class="row"]/div[@class="col-md-12"]/text()').extract_first()),
-        }
+        prices = response.selector.xpath('//ul[@class="nav fce-buttons-buy-container"]/li/ul/li[2]/text()')
+        isbns = response.selector.xpath('//ul[@class="nav fce-buttons-buy-container"]/div/div/text()')
 
-        if not data.get("title") or not data.get("price"):
-            return
+        for price, isbn in zip(prices, isbns):
+            data={
+                "url": response.url.strip(),
+                "title": self.clean_text(response.selector.xpath('//li/span[@class="text-titulo"]/text()').extract_first()),
+                "content": self.clean_text(response.selector.xpath('//div/div[@class="col-md-12"][1]/text()').extract_first()),
+                "author": self.clean_text(response.selector.xpath('//li/span[@class="text-autor"][1]/text()').extract_first()),
+                "price": self.clean_price(price.extract_first()),
+                "editorial": self.clean_text(response.selector.xpath('//li/span[@class="text-editorial"]/text()').extract_first()),
+                "ISBN": self.clean_isbn(isbn.extract_first()),
+            }
 
-        yield data
+            if not data.get("title") or not data.get("price") or not data.get("ISBN"):
+                return
+
+            yield data
 
     def clean_text(self, text):
         if not isinstance(text, str):
