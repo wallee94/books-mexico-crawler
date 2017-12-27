@@ -47,10 +47,13 @@ class FondodeCulturaEconomica(scrapy.Spider):
             return
 
     def parse_details(self, response):
-        prices = response.selector.xpath('//ul[@class="nav fce-buttons-buy-container"]/li/ul/li[2]/text()')
+        prices = response.selector.xpath('//ul[@class="nav fce-buttons-buy-container"]/li/ul[@class="nav fce-det-buy-container"]/li[2]/text()')
         isbns = response.selector.xpath('//ul[@class="nav fce-buttons-buy-container"]/div/div/text()')
+        isbns = isbns[:len(prices)]  # to drop isbns from electronic books
 
         for price, isbn in zip(prices, isbns):
+            print(price.extract(), isbn.extract())
+
             data={
                 "url": self.clean_url(response.url.strip()),
                 "title": self.clean_text(response.selector.xpath('//li/span[@class="text-titulo"]/text()').extract_first()),
