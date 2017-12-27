@@ -48,14 +48,16 @@ class FondodeCulturaEconomica(scrapy.Spider):
             return
 
     def parse_details(self, response):
-        isbn = response.url.split("/")[-1]
+        price = response.xpath('//ul[@class="nav fce-buttons-buy-container"]').extract_first()
+        for i in range(0,len(price)):
+            if response.selector.xpath()
         data={
             "url": response.url.strip(),
             "title": self.clean_text(response.selector.xpath('//li/span[@class="text-titulo"]/text()').extract_first()),
             "content": self.clean_text(response.selector.xpath('//div/div[@class="col-md-12"][1]/text()').extract_first()),
             "author": self.clean_text(response.selector.xpath('//li/span[@class="text-autor"][1]/text()').extract_first()),
-            "editorial": self.clean_text(response.selector.xpath('//li/span[@class="text-editorial"]/text()').extract_first()),
             "price": self.clean_price(response.selector.xpath('//li//li[2]/text()').extract_first()),
+            "editorial": self.clean_text(response.selector.xpath('//li/span[@class="text-editorial"]/text()').extract_first()),
             "ISBN": self.clean_isbn(response.selector.xpath('//div[@class="row"]/div[@class="col-md-12"]/text()').extract_first()),
         }
 
