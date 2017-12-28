@@ -43,6 +43,7 @@ class Alfaomega(scrapy.Spider):
             "price": self.clean_price(response.selector.xpath('//div[@class="product-info"]/span[2]/text()').extract_first()),
             "editorial": self.clean_text(response.selector.xpath('//table[@class="data-table"]//tbody/tr[2]/td/text()').extract_first()),
             "ISBN": self.clean_isbn(response.selector.xpath('//table[@class="data-table"]//tbody/tr[4]/td/text()').extract_first()),
+            "image_url": response.selector.xpath('//div[@id="image"]/img/@src').extract_first(),
         }
 
         if not data.get("title") or not data.get("price") or not data.get("ISBN"):
