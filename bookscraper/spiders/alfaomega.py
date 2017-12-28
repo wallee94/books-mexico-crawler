@@ -32,12 +32,12 @@ class Alfaomega(scrapy.Spider):
     def parse_details(self, response):
         data = {
             "url": response.url.strip(),
-            "title": self.clean_text(response.selector.xpath("//div[@class='product-name']").extract_first()).capitalize(),
+            "title": self.clean_text(response.selector.xpath("//div[@class='product-name']/text()").extract_first()).capitalize(),
             "content": self.clean_text(response.selector.xpath("//div[@class='std']/child::p/text()").extract_first()),
             "author": self.clean_text(response.selector.xpath("//table[@class='data-table']//tbody/tr[1]/td/text()").extract_first()).capitalize(),
             "price": self.clean_price(response.selector.xpath("//div[@class='product-info']/span[2]/text()").extract_first()),
             "editorial": self.clean_text(response.selector.xpath("//table[@class='data-table']//tbody/tr[2]/td/text())").extract_first()).capitalize(),
-            "ISBN": self.clean_isbn(response.selector.xpath("//table[@class='data-table']//tbody/tr[4]/td").extract_first()),
+            "ISBN": self.clean_isbn(response.selector.xpath("//table[@class='data-table']//tbody/tr[4]/td/text()").extract_first()),
         }
 
         if not data.get("title") or not data.get("price") or not data.get("ISBN"):
