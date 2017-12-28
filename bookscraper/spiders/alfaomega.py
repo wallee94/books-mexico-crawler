@@ -1,4 +1,3 @@
-import pkgutil
 import re
 
 import scrapy
@@ -17,8 +16,14 @@ class Alfaomega(scrapy.Spider):
         }
 
     def start_requests(self):
-        url = "https://www.alfaomega.com.mx/default/catalogo.html"
-        yield scrapy.Request(url=url, callback=self.parse, headers=self.headers)
+        start_urls = [
+            "https://www.alfaomega.com.mx/default/catalogo/escolar-2.html?limit=48",
+            "https://www.alfaomega.com.mx/default/catalogo/profesional.html?limit=48",
+            "https://www.alfaomega.com.mx/default/catalogo/interes-general.html?limit=48",
+            "https://www.alfaomega.com.mx/default/catalogo/servicios-ao.html?limit=48"
+        ]
+        for url in start_urls:
+            yield scrapy.Request(url=url, callback=self.parse, headers=self.headers)
 
     def parse(self, response):
         urls = response.selector.xpath("//div[@class='product-image']/div/div/div/div[1]/a/@href")
@@ -32,12 +37,12 @@ class Alfaomega(scrapy.Spider):
     def parse_details(self, response):
         data = {
             "url": response.url.strip(),
-            "title": self.clean_text(response.selector.xpath("//div[@class='product-name']/text()").extract_first()).capitalize(),
-            "content": self.clean_text(response.selector.xpath("//div[@class='std']/child::p/text()").extract_first()),
-            "author": self.clean_text(response.selector.xpath("//table[@class='data-table']//tbody/tr[1]/td/text()").extract_first()).capitalize(),
-            "price": self.clean_price(response.selector.xpath("//div[@class='product-info']/span[2]/text()").extract_first()),
-            "editorial": self.clean_text(response.selector.xpath("//table[@class='data-table']//tbody/tr[2]/td/text())").extract_first()).capitalize(),
-            "ISBN": self.clean_isbn(response.selector.xpath("//table[@class='data-table']//tbody/tr[4]/td/text()").extract_first()),
+            "title": self.clean_text(response.selector.xpath("//h1/text()").extract_first()),
+            "content": self.clean_text(response.selector.xpath('//div[@class="std"]/child::p/text()').extract_first()),
+            "author": self.clean_text(response.selector.xpath('//table[@class="data-table"]//tbody/tr[1]/td/text()').extract_first()),
+            "price": self.clean_price(response.selector.xpath('//div[@class="product-info"]/span[2]/text()').extract_first()),
+            "editorial": self.clean_text(response.selector.xpath('//table[@class="data-table"]//tbody/tr[2]/td/text()').extract_first()),
+            "ISBN": self.clean_isbn(response.selector.xpath('//table[@class="data-table"]//tbody/tr[4]/td/text()').extract_first()),
         }
 
         if not data.get("title") or not data.get("price") or not data.get("ISBN"):
