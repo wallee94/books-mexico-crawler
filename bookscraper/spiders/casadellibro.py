@@ -1,7 +1,8 @@
 import pkgutil
-import re
 
 import scrapy
+
+from .parsers import parse_details_casadelibro
 
 
 class CasaDelLibroSpider(scrapy.Spider):
@@ -38,36 +39,4 @@ class CasaDelLibroSpider(scrapy.Spider):
         for loc in locs:
             url = loc.extract()
             if ".pdf" not in url and url not in self.requests_done:
-                yield scrapy.Request(url=url, headers=self.details_headers, cookies={}, callback=self.parse_details)
-
-    def parse_details(self, response):
-        data={
-            "url": response.url,
-            "title": self.clean_text(response.selector.xpath("//h1/text()").extract_first()),
-            "content": "",
-            "author": self.clean_text(response.selector.xpath('//*[@id="product_man"]/a/span/text()').extract_first()),
-            "editorial": "",
-            "price": self.clean_price(response.selector.xpath('//*[@itemprop="price"]/text()').extract_first()),
-            "ISBN": self.clean_price(response.selector.xpath('//*[@itemprop="sku"]/text()').extract_first())
-        }
-
-        if data["price"] == -1 or data["ISBN"] == -1:
-            return
-
-        yield data
-
-    def clean_text(self, text):
-        if not isinstance(text, str):
-            return ""
-        text = re.sub("[\n\t]+", "", text)
-        text = re.sub("\s+", " ", text)
-        return text
-
-    def clean_price(self, price):
-        if not isinstance(price, str):
-            return "-1"
-        res = ""
-        for c in price:
-            if c.isdigit() or c == ".":
-                res += c
-        return res
+                yield scrapy.Request(url=url, headers=self.details_headers, cookies={}, callback=parse_details_casadelibro)

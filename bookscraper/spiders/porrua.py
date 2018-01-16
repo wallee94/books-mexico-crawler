@@ -2,7 +2,7 @@ import pkgutil
 import re
 
 import scrapy
-
+from .parsers import parse_details_porrua
 
 class Porrua(scrapy.Spider):
     name = 'porrua.mx'
@@ -24,37 +24,5 @@ class Porrua(scrapy.Spider):
 
         for isbn in isbn_list:
             url = "https://www.porrua.mx/libro/GEN:ISBN/autor/titulo/" + isbn
-            yield scrapy.Request(url=url, callback=self.parse, headers=self.listing_headers)
+            yield scrapy.Request(url=url, callback=parse_details_porrua, headers=self.listing_headers)
 
-    def parse(self, response):
-        isbn = response.url.split("/")[-1]
-        data={
-            "url": response.url,
-            "title": self.clean_text(response.selector.xpath("//div[@class]/strong[@style][1]/text()").extract_first()),
-            "content": "",
-            "author": self.clean_text(response.selector.xpath('//div[@class]/p[@style][1]/span/text()').extract_first()),
-            "editorial": self.clean_text(response.selector.xpath("//div[@class]/p[@style][2]/span/text()").extract_first()),
-            "price": self.clean_price(response.selector.xpath('//div[@class="comprar_precio"]/strong/text()').extract_first()),
-            "ISBN": isbn,
-        }
-
-        if not data.get("title") or not data.get("price"):
-            return
-
-        yield data
-
-    def clean_text(self, text):
-        if not isinstance(text, str):
-            return ""
-        text = re.sub("[\n\t]+", "", text)
-        text = re.sub("\s+", " ", text)
-        return text
-
-    def clean_price(self, price):
-        if not isinstance(price, str):
-            return "-1"
-        res = ""
-        for c in price:
-            if c.isdigit():
-                res += c
-        return res

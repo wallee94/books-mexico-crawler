@@ -1,5 +1,6 @@
 import re
 import scrapy
+from .parsers import parse_details_gonvill
 
 
 class GonvillSpider(scrapy.Spider):
@@ -26,33 +27,4 @@ class GonvillSpider(scrapy.Spider):
         for loc in locs:
             url = loc.extract()
             if "/libro/" in url:
-                yield scrapy.Request(url=url, callback=self.parse_details, headers=self.details_headers)
-
-    def parse_details(self, response):
-        data={
-            "url": response.url,
-            "title": self.clean_text(response.selector.xpath("//div/dl/h1/text()").extract_first()),
-            "content": self.clean_text(response.selector.xpath('//div/p[@itemprop="description"]/text()').extract_first()),
-            "author": self.clean_text(response.selector.xpath("//div/dl/p/a/text()").extract_first()),
-            "editorial": self.clean_text(response.selector.xpath('//div/dl/dd/a[@itemprop="publisher"]/text()').extract_first()),
-            "price": self.clean_price(response.selector.xpath('//div/span[@itemprop="price"]/text()').extract_first()),
-            "ISBN": self.clean_price(response.selector.xpath('//div//dl/dd[@itemprop="isbn"]/text()').extract_first())
-        }
-
-        yield data
-
-    def clean_text(self, text):
-        if not isinstance(text, str):
-            return ""
-        text = re.sub("[\n\t]+", "", text)
-        text = re.sub("\s+", " ", text)
-        return text
-
-    def clean_price(self, price):
-        if not isinstance(price, str):
-            return "-1"
-        res = ""
-        for c in price:
-            if c.isdigit() or c == ".":
-                res += c
-        return res
+                yield scrapy.Request(url=url, callback=parse_details_gonvill, headers=self.details_headers)

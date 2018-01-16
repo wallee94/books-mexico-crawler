@@ -1,6 +1,8 @@
-import scrapy
 import json
-import re
+
+import scrapy
+
+from .parsers import parse_details_gandhi
 
 
 class GandhiSpider(scrapy.Spider):
@@ -44,7 +46,7 @@ class GandhiSpider(scrapy.Spider):
         for li in response.selector.css("li.item"):
             url= li.xpath("./a/@href").extract_first()
             books_found += 1
-            yield scrapy.Request(url=url, callback=self.parse_details, headers=self.details_headers)
+            yield scrapy.Request(url=url, callback=parse_details_gandhi, headers=self.details_headers)
 
         # find new url
         form_data = {
@@ -53,38 +55,3 @@ class GandhiSpider(scrapy.Spider):
         if books_found == 20:
             url= response.url.split("=")[0] + "=" + str(int(page) + 1)
             yield scrapy.Request(url=url, body=json.dumps(form_data), callback=self.parse, method="POST", headers=self.listing_headers)
-
-
-    def parse_details(self, response):
-        data={
-            "url": response.url,
-            "title": self.clean_text(response.selector.xpath("//form//h1/text()").extract_first()),
-            "content": self.clean_text(response.selector.xpath("//form//dd/div/div/text()").extract_first()),
-            "author": self.clean_text(response.selector.xpath("//form//h2[1]/a/text()").extract_first()),
-            "editorial": self.clean_text(response.selector.xpath("//form//h2[2]/a/text()").extract_first()),
-            "price": self.clean_price(response.selector.xpath('//span[@class="price"]/text()').extract_first()),
-            "ISBN": self.clean_price(response.selector.xpath("//dd//tbody/tr[6]/td").extract_first())
-        }
-
-        yield data
-
-    def clean_text(self, text):
-        if not isinstance(text, str):
-            return ""
-        text = re.sub("[\n\t]+", "", text)
-        text = re.sub("\s+", " ", text)
-        return text
-
-    def clean_price(self, price):
-        if not isinstance(price, str):
-            return "-1"
-        res = ""
-        for c in price:
-            if c.isdigit():
-                res += c
-        return res
-
-
-
-
-

@@ -1,7 +1,8 @@
 import pkgutil
-import re
 
 import scrapy
+
+from .parsers import parse_details_fce
 
 
 class FondodeCulturaEconomica(scrapy.Spider):
@@ -38,57 +39,10 @@ class FondodeCulturaEconomica(scrapy.Spider):
         if url:
             books_found += 1
             yield scrapy.Request(url="https://elfondoenlinea.com/" + url,
-                                 callback=self.parse_details,
+                                 callback=parse_details_fce,
                                  headers=self.listing_headers,
                                  meta=response.meta
                                  )
 
         if books_found == 0:
             return
-
-    def parse_details(self, response):
-        prices = response.selector.xpath('//ul[@class="nav fce-buttons-buy-container"]/li/ul[@class="nav fce-det-buy-container"]/li[2]/text()')
-        isbns = response.selector.xpath('//ul[@class="nav fce-buttons-buy-container"]/div/div/text()')
-        isbns = isbns[:len(prices)]  # to drop isbns from electronic books
-
-        for price, isbn in zip(prices, isbns):
-            print(price.extract(), isbn.extract())
-
-            data={
-                "url": self.clean_url(response.url.strip()),
-                "title": self.clean_text(response.selector.xpath('//li/span[@class="text-titulo"]/text()').extract_first()),
-                "content": self.clean_text(response.selector.xpath('//div/div[@class="col-md-12"][1]/text()').extract_first()),
-                "author": self.clean_text(response.selector.xpath('//li/span[@class="text-autor"][1]/text()').extract_first()),
-                "price": self.clean_price(price.extract()),
-                "editorial": self.clean_text(response.selector.xpath('//li/span[@class="text-editorial"]/text()').extract_first()),
-                "ISBN": self.clean_isbn(isbn.extract()),
-            }
-
-            if not data.get("title") or not data.get("price") or not data.get("ISBN"):
-                return
-
-            yield data
-
-    def clean_text(self, text):
-        if not isinstance(text, str):
-            return ""
-        text = re.sub("[\n\t]+", "", text)
-        text = re.sub("\s+", " ", text)
-        return text
-
-    def clean_isbn(self, text):
-        if not isinstance(text, str):
-            return ""
-        return re.sub(r"[^\d]", "", text)
-
-    def clean_price(self, price):
-        if not isinstance(price, str):
-            return "-1"
-        res = ""
-        for c in price:
-            if c.isdigit() or c == ".":
-                res += c
-        return res
-
-    def clean_url(self, url):
-        return re.sub(r'[%20]+$', "", url)

@@ -1,6 +1,6 @@
-import re
-
 import scrapy
+
+from .parsers import parse_details_educal
 
 
 class EducalSpider(scrapy.Spider):
@@ -41,37 +41,8 @@ class EducalSpider(scrapy.Spider):
 
         for url in response.selector.xpath('//div[@id="item-3d-display"]//div[@class="top"]/a/@href'):
             books_found += 1
-            yield scrapy.Request(url=url.extract(), callback=self.parse_details, headers=self.listing_headers)
+            yield scrapy.Request(url=url.extract(), callback=parse_details_educal, headers=self.listing_headers)
 
         if books_found != 0:
             url = response.url.split("pagina")[0] + "pagina" + str(int(page) + 1) + ".html"
             yield scrapy.Request(url=url, callback=self.parse, headers=self.listing_headers)
-
-
-    def parse_details(self, response):
-        data={
-            "url": response.url,
-            "title": self.clean_text(response.selector.xpath('//div[@class="col-md-6 info-panel"]/span[@class="title"]/text()').extract_first()),
-            "content": self.clean_text(response.selector.xpath('//div[@class="sinopsis-text"]/text()').extract_first()),
-            "author": self.clean_text(response.selector.xpath('//span/a/text()').extract_first()),
-            "price": self.clean_price(response.selector.xpath('//div[@class="col-md-6 info-panel"]//div[@class="price"]/text()').extract_first()),
-            "ISBN": self.clean_price(response.selector.xpath('//td/span[text()="ISBN"]/parent::td/text()').extract_first())
-        }
-
-        yield data
-
-    def clean_text(self, text):
-        if not isinstance(text, str):
-            return ""
-        text = re.sub("[\n\t]+", "", text)
-        text = re.sub("\s+", " ", text)
-        return text
-
-    def clean_price(self, price):
-        if not isinstance(price, str):
-            return "-1"
-        res = ""
-        for c in price:
-            if c.isdigit() or c == ".":
-                res += c
-        return res

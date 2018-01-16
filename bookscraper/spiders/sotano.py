@@ -1,6 +1,8 @@
 import pkgutil
-import re
+
 import scrapy
+
+from .parsers import parse_details_sotano
 
 
 class ElSotano(scrapy.Spider):
@@ -33,42 +35,10 @@ class ElSotano(scrapy.Spider):
             if url:
                 books_found += 1
                 yield scrapy.Request(url="https://www.elsotano.com/" + url,
-                                     callback=self.parse_details,
+                                     callback=parse_details_sotano,
                                      headers=self.listing_headers,
                                      meta=response.meta
                                      )
 
         if books_found == 0:
             return
-
-    def parse_details(self, response):
-        data={
-            "url": response.url,
-            "title": self.clean_text(response.selector.xpath("//div/div/h1/text()").extract_first()),
-            "content": self.clean_text(response.selector.xpath("//div/div/section/div[1]/p/text()").extract_first()),
-            "author": self.clean_text(response.selector.xpath('//div[@class="descripcion-libro DER"]/a/text()').extract_first()),
-            "editorial": self.clean_text(response.selector.xpath("//div/div/span/a/text()").extract_first()),
-            "price": self.clean_price(response.selector.xpath('//div/div/div/p/span[2]/text()').extract_first()),
-            "ISBN": response.meta.get("isbn")
-        }
-
-        if not data.get("title") or not data.get("price"):
-            return
-
-        yield data
-
-    def clean_text(self, text):
-        if not isinstance(text, str):
-            return ""
-        text = re.sub("[\n\t]+", "", text)
-        text = re.sub("\s+", " ", text)
-        return text
-
-    def clean_price(self, price):
-        if not isinstance(price, str):
-            return "-1"
-        res = ""
-        for c in price:
-            if c.isdigit() or c == ".":
-                res += c
-        return res
