@@ -1,8 +1,9 @@
 import pkgutil
-import re
 
 import scrapy
+
 from .parsers import parse_details_porrua
+
 
 class Porrua(scrapy.Spider):
     name = 'porrua.mx'
