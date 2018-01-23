@@ -7,5 +7,16 @@
 
 
 class BookscraperPipeline(object):
+    file = None
+
+    def open_spider(self, spider):
+        self.file = open(spider.name + "_urls.txt", "w")
+
     def process_item(self, item, spider):
+        if item.get("url"):
+            self.file.write(item.get("url") + "\n")
+
         return item
+
+    def close_spider(self, spider):
+        self.file.close()
