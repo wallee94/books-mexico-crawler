@@ -261,6 +261,10 @@ def parse_details_sotano(response):
         yield data
 
 
+def parse_details_odessa(response):
+    pass
+
+
 def clean_text(text):
     if not isinstance(text, str):
         return ""

@@ -33,18 +33,18 @@ class GandhiSpider(scrapy.Spider):
             "Referer": "http://www.gandhi.com.mx/libros/ficcion",
             "X-Requested-With": "XMLHttpRequest"
         }
-        data={
+        data = {
             "isJsonP": "1"
         }
         for url in urls:
             yield scrapy.Request(url=url, body=json.dumps(data), callback=self.parse, method="POST", headers=self.listing_headers)
 
     def parse(self, response):
-        page= response.url.split("=")[1]
+        page = response.url.split("=")[1]
         books_found = 0
 
         for li in response.selector.css("li.item"):
-            url= li.xpath("./a/@href").extract_first()
+            url = li.xpath("./a/@href").extract_first()
             books_found += 1
             yield scrapy.Request(url=url, callback=parse_details_gandhi, headers=self.details_headers)
 
@@ -53,5 +53,5 @@ class GandhiSpider(scrapy.Spider):
             "isJsonP": "1"
         }
         if books_found == 20:
-            url= response.url.split("=")[0] + "=" + str(int(page) + 1)
+            url = response.url.split("=")[0] + "=" + str(int(page) + 1)
             yield scrapy.Request(url=url, body=json.dumps(form_data), callback=self.parse, method="POST", headers=self.listing_headers)
