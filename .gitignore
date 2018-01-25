@@ -6,3 +6,4 @@
 *.json
 *.pyc
 *test.jl
+*_urls.txt
