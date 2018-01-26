@@ -12,6 +12,10 @@ class LaleoSpider(scrapy.Spider):
 
     def parse_category_ids(self, response):
         for category_id in response.selector.re(r"127_(\d+)"):
+            # 131 category are ebooks
+            if category_id == "131":
+                continue
+
             body = {
                 "container": "listing",
                 "page": "0",
