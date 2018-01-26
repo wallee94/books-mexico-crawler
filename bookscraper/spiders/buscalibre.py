@@ -23,6 +23,9 @@ class BuscaLibreSpider(scrapy.Spider):
             yield scrapy.Request(url=url, callback=self.parse_category_books, meta=meta)
 
     def parse_category_books(self, response):
+        if response.selector.xpath('//section[@id="noEncontrado"]'):
+            return
+
         for product_selector in response.selector.xpath('//div[@class="producto "]/a/@href'):
             yield {
                 "url": product_selector.extract()
