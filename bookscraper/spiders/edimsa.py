@@ -6,7 +6,7 @@ class EdimsaSpider(scrapy.Spider):
 
     def start_requests(self):
         urls = [
-            'https://www.edimsa.com.mx/categoria/' + str(i) for i in range(1,250)
+            'https://www.edimsa.com.mx/categoria/' + str(i) for i in range(1, 250)
         ]
 
         self.details_headers = {
@@ -22,8 +22,9 @@ class EdimsaSpider(scrapy.Spider):
 
     def parse(self, response):
         if response.selector.xpath('//div[@id="books-container"]'):
-            url = response.selector.xpath('//div[@id="books-container"]/div[@class="book-listing"]/div/a/@href').extract_first()
-            if url:
-                yield {
-                    "url": "https://www.edimsa.com.mx" + url
-                }
+            for url_selector in response.selector.xpath('//div[@id="books-container"]/div[@class="book-listing"]/div/a/@href'):
+                url = url_selector.extract()
+                if url:
+                    yield {
+                        "url": "https://www.edimsa.com.mx" + url
+                    }
