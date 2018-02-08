@@ -30,7 +30,7 @@ class SanbornsSpider(scrapy.Spider):
             url = div.xpath('./a[1]/@href').extract_first()
             books_found += 1
             data = {
-                "url": re.sub("^h?t?t?p?s?:?/?/?w?w?w?\.?", "", url)
+                "url": re.sub("^h?t?t?p?s?:?/?/?w?w?w?", "", url)
             }
             yield data
             if books_found == 12:
